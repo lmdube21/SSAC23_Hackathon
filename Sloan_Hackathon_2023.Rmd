@@ -165,12 +165,12 @@ data_train_concert <- data_train_concert%>%mutate(PredictedTotalSpendConcert = p
 
 ggplot(data_train_concert, aes(x= PredictedTotalSpendConcert, fill = CityName)) + geom_density(alpha= .5) + xlim(0,2000) + labs(fill = "City", x = "Predicted Total Spend on Concerts")
 
-spend_by_city_concert <- data_train %>% 
+spend_by_city_concert <- data_train_concert %>% 
   group_by(CityName) %>% 
-  summarise(City_Spend = mean(predicted_dollars),
-            City_Spend_sd = sd(predicted_dollars),
-            total_spend = sum(predicted_dollars),
-            sample_size = n())
+  summarise(City_Spend_concert = mean(predicted_dollars_concert),
+            City_Spend_sd_concert = sd(predicted_dollars_concert),
+            total_spend_concert = sum(predicted_dollars_concert),
+            sample_size_concert = n())
 
 ```
 
@@ -233,35 +233,56 @@ fan_types_by_city <-
   rowwise() %>%
   mutate(perc_by_sport = regular_fans/city_total_regular_fans) %>% 
   left_join(spend_by_city) %>%
-  mutate(FINAL_SPEND = total_spend * expected_regular_fans/sample_size * perc_by_sport)
-
-
-  
-
-ggplot(fan_types_by_city, aes(x= Sport, y = expected_regular_fans/1000, fill = Sport)) + 
-  geom_col() +
-  facet_wrap(~CityName)+
-  theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sport", y = "Expected Thousands of Regular Fans", title = "Regular Fans by City and Sport")
-
-ggplot(fan_types_by_city, aes(x= Sport, y = expected_super_fans/1000, fill = Sport)) + 
-  geom_col() +
-  facet_wrap(~CityName)+
-  theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sport", y = "Expected Thousands of Super Fans", title = "Super Fans by City and Sport")
-
-ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND, fill = Sport)) + 
-  geom_col() +
-  facet_wrap(~CityName)+
-  theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sport", y = "Expected Revenue", title = "Super Fans by City and Sport")
+  mutate(FINAL_SPEND = total_spend * expected_regular_fans/sample_size * perc_by_sport)%>%
+  left_join(spend_by_city_concert) %>%
+   mutate(FINAL_SPEND_concert = total_spend_concert * expected_regular_fans/sample_size)
 ```
-
 
 
 ```{r}
-
-percentFans <- fan_types_by_city %>% grou
+ggData <- fan_types_by_city %>%
+  mutate(reg2 = expected_regular_fans-expected_super_fans) %>%select(CityName, Sport, reg2, expected_super_fans) %>% pivot_longer(cols = c("reg2", "expected_super_fans"))%>%
+  rename(type = name)
 ```
+
+
+```{r}
+ggplot(ggData, aes(x= Sport, y = value/1000000, fill = Sport,linetype=  type)) + 
+  geom_col(color ="black") +
+  facet_wrap(~CityName)+
+  labs(x = "Sport", y = "Millions of Fans", title = "Expected Fans")+ 
+  ggthemes::theme_economist()+
+  theme(axis.text.x = element_text(angle = 90))+ylim(0,1.7) +
+  scale_linetype_manual(values=c("dotted", "blank"))+
+  guides(linetype =F)
+```
+
+
+```{r}
+ggplot(
+  fan_types_by_city, aes(x= Sport, y = expected_regular_fans/1000000, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName)+
+  labs(x = "Sport", y = "Millions of Regular Fans", title = "Expected Regular Fans")+ 
+  ggthemes::theme_economist()+
+  theme(axis.text.x = element_text(angle = 90))+ylim(0,1.7)
+
+ggplot(fan_types_by_city, aes(x= Sport, y = expected_super_fans/1000000, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName)+
+  labs(x = "Sport", y = "Millions of Super Fans", title = "Expected Super Fans")+ 
+  ggthemes::theme_economist()+
+  theme(axis.text.x = element_text(angle = 90)) +ylim(0,1.7)
+
+ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND/1000000, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName) +
+  labs(x = "Sport", y = "Million $", title = "Expected Revenue") + 
+  ggthemes::theme_economist()+
+  theme(axis.text.x = element_text(angle = 90)) + ylim(0,115)
+```
+
+
+
 
 
