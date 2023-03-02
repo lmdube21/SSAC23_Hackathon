@@ -166,7 +166,10 @@ fan_types <-
          regular_fan= ifelse(score >= mean(score, na.rm=T), 1, 0),
          Sport = sub(".*:", "", Sport))
 
-
+fan_totals <-
+  fan_types %>% 
+  group_by(CityName) %>% 
+  summarise(city_fan_ct = n())
 
 fan_types_by_city <- 
   fan_types %>% 
@@ -178,9 +181,14 @@ fan_types_by_city <-
             ct = n(),
             expected_super_fans = super_fans*population/ct,
             expected_regular_fans = regular_fans*population/ct,
-            ) 
+            ) %>%
+  left_join(fan_totals) %>% 
+  rowwise() %>%
+  mutate(perc_by_sport = ct/city_fan_ct)
+
+
   
-  
+
 ggplot(fan_types_by_city, aes(x= Sport, y = expected_regular_fans/1000, fill = Sport)) + 
   geom_col() +
   facet_wrap(~CityName)+
@@ -194,8 +202,11 @@ ggplot(fan_types_by_city, aes(x= Sport, y = expected_super_fans/1000, fill = Spo
   labs(x = "Sport", y = "Expected Thousands of Super Fans", title = "Super Fans by Ciry and Sport")
 ```
 
+
+
 ```{r}
 
-
+percentFans <- fan_types_by_city %>% grou
 ```
+
 
