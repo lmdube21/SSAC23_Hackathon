@@ -7,17 +7,19 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 #### Data Cleaning
+
 Output of the below cell is two dataframes: 'continuous_df' which is all of the continuous data from the dataset and 'categorical_df' which is all of the categorical data.  Those with two categories have been 'one hot' encoded.
 
 ```{r Data_Clean}
 
-data_path =  "/Users/lorenzo_dube/Desktop/Sloan_Hackathon/MIT Sloan Hackathon Sample 20230222.xlsx"
+data_path = "HackSample.xlsx"
 
-customer = read_excel(data_path, sheet = 'Customer')
-behavior = read_excel(data_path, sheet = 'Behavioral')
+customer = readxl::read_xlsx(data_path, sheet = 'Customer')
+behavior = readxl::read_xlsx(data_path, sheet = 'Behavioral')
 
 customer <- customer[, colSums(!is.na(customer)) > 0] #remove all NA only columns
 customer <- customer[, !grepl("input_indv", names(customer))] #remove input_indv columns
