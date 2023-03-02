@@ -146,21 +146,40 @@ population <- data.frame (city  = c("Virginia Beach", "Lousiville", "Kansas City
 fan_types <-
   continuous %>% 
   select(contains("propn_score_minor_4"), CityName) %>% 
-  pivot_longer(values_to = "Score", cols = c(contains("propn")), names_to = "Prop") %>%
+  pivot_longer(values_to = "score", cols = c(contains("propn")), names_to = "Prop") %>%
   left_join(population, by = c("CityName" = "city"))%>%
   left_join(read_csv("prop_join.csv")) %>%
   mutate(prop_number = as.numeric(substring(Prop,nchar(Prop)-3+1), nchar(Prop))) %>%
-  filter(between(prop_number, 410, 450))
+  filter(between(prop_number, 410, 450)) %>% 
+  mutate(super_fan = ifelse(score >= 650, 1, 0),
+         regular_fan= ifelse(score >= mean(score, na.rm=T), 1, 0),
+         Sport = sub(".*:", "", Sport))
+
 
 
 fan_types_by_city <- 
   fan_types %>% 
   group_by(CityName, Sport) %>%
   summarise(population = mean(population),
-            avgScore = mean(Score, na.rm=T),
-            totalFans = n()) 
+            avg_score = mean(score, na.rm=T),
+            regular_fans =  sum(regular_fan, na.rm=T), 
+            super_fans = sum(super_fan, na.rm=T),
+            ct = n(),
+            expected_super_fans = super_fans*population/ct,
+            expected_regular_fans = regular_fans*population/ct,
+            ) 
   
   
+ggplot(fan_types_by_city, aes(x= Sport, y = expected_regular_fans/1000, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName)+
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Sport", y = "Expected Thousands of Regular Fans", title = "Regular Fans by City and Sport")
 
+ggplot(fan_types_by_city, aes(x= Sport, y = expected_super_fans/1000, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName)+
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Sport", y = "Expected Thousands of Super Fans", title = "Super Fans by Ciry and Sport")
 ```
 
