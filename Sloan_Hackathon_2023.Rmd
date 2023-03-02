@@ -85,10 +85,17 @@ categorical <- lv_categorical %>% mutate(CityName = "Lousiville") %>%
 continuous <- lv_continuous %>% mutate(CityName = "Lousiville") %>%
   bind_rows(vb_continuous %>%  mutate(CityName = "Virginia Beach")) %>%
   bind_rows(kc_continuous %>% mutate(CityName = "Kansas City")) %>%
-  mutate(personicx_group  = case_when(psx_group_id >= 8))
+  mutate(personicx_group  = factor(case_when(psx_group_id <= 2 ~ "Youth",
+                                      psx_group_id <= 8 ~ "CareerBuilding",
+                                      psx_group_id <= 14 ~ "Earning",
+                                      psx_group_id <= 20~ "LateCareer",
+                                      psx_group_id > 20 ~ "Retired",
+                                      T ~ "NA"
+                                      ),ordered = T))
 
-allData <- left_join(categorical, continuous) %>% filter()
-  
+allData <- left_join(categorical, continuous) %>% 
+  filter(brkr_ind == 0|is.na(brkr_ind))
+
 ```
 
 Removing all accounts for which there are multiple lines for whatever reason. ~1000 observations removed. 
