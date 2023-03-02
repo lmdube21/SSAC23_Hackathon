@@ -84,9 +84,11 @@ categorical <- lv_categorical %>% mutate(CityName = "Lousiville") %>%
 
 continuous <- lv_continuous %>% mutate(CityName = "Lousiville") %>%
   bind_rows(vb_continuous %>%  mutate(CityName = "Virginia Beach")) %>%
-  bind_rows(kc_continuous %>% mutate(CityName = "Kansas City"))
+  bind_rows(kc_continuous %>% mutate(CityName = "Kansas City")) %>%
+  mutate(personicx_group  = case_when(psx_group_id >= 8))
 
-allData <- left_join(categorical, continuous)
+allData <- left_join(categorical, continuous) %>% filter()
+  
 ```
 
 Removing all accounts for which there are multiple lines for whatever reason. ~1000 observations removed. 
@@ -186,7 +188,6 @@ ggplot(fan_types_by_city, aes(x= Sport, y = expected_super_fans/1000, fill = Spo
 ```
 
 ```{r}
-
 
 
 ```
