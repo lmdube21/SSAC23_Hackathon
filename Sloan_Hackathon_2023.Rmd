@@ -140,17 +140,27 @@ ggplot(continuous, aes(x= cust_postal_cd )) +
 
 
 ```{r}
-
-population <- data.frame (city  = c("Virginia Beach", "Louisiville", "Kansas City"),
+population <- data.frame (city  = c("Virginia Beach", "Lousiville", "Kansas City"),
                   population = c(1800000, 1400000, 2200000))
 
 fan_types <-
   continuous %>% 
   select(contains("propn_score_minor_4"), CityName) %>% 
-  pivot_longer(values_to = "Sport", cols = c(contains("propn")))
+  pivot_longer(values_to = "Score", cols = c(contains("propn")), names_to = "Prop") %>%
+  left_join(population, by = c("CityName" = "city"))%>%
+  left_join(read_csv("prop_join.csv")) %>%
+  mutate(prop_number = as.numeric(substring(Prop,nchar(Prop)-3+1), nchar(Prop))) %>%
+  filter(between(prop_number, 410, 450))
 
 
-
+fan_types_by_city <- 
+  fan_types %>% 
+  group_by(CityName, Sport) %>%
+  summarise(population = mean(population),
+            avgScore = mean(Score, na.rm=T),
+            totalFans = n()) 
+  
+  
 
 ```
 

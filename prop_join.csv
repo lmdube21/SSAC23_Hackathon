@@ -1,0 +1,18 @@
+﻿Prop,Sport
+propn_score_minor_401,Propensity:Boxing
+propn_score_minor_402,Propensity:MMA
+propn_score_minor_403,Propensity:Wrestling
+propn_score_minor_410,Propensity:Baseball
+propn_score_minor_412,Propensity:Baseball-College
+propn_score_minor_420,Propensity:Basketball
+propn_score_minor_423,Propensity:Basketball-College
+propn_score_minor_430,Propensity:Football
+propn_score_minor_432,Propensity:Football-College
+propn_score_minor_440,Propensity:Hockey
+propn_score_minor_442,Propensity:Hockey-College
+propn_score_minor_450,Propensity:Soccer
+propn_score_minor_460,Propensity:Motorsports
+propn_score_minor_470,Propensity:Rodeo
+propn_score_minor_480,Propensity:Golf
+propn_score_minor_491,Propensity:Tennis
+propn_score_minor_499,Propensity:Other Sports
