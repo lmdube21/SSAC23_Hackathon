@@ -86,5 +86,6 @@ continuous <- lv_continuous %>% mutate(CityName = "Lousiville") %>%
   bind_rows(kc_continuous %>% mutate(CityName = "Kansas City"))
   
 
+ggplot(continuous, aes(x= cust_postal_cd )) + geom_histogram() + facet_wrap(~CityName)
 ```
 
