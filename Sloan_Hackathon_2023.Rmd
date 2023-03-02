@@ -16,10 +16,9 @@ Output of the below cell is two dataframes: 'continuous_df' which is all of the 
 
 ```{r Data_Clean}
 
-data_path = "HackSample.xlsx"
-
-customer = readxl::read_xlsx(data_path, sheet = 'Customer')
-behavior = readxl::read_xlsx(data_path, sheet = 'Behavioral')
+cat_data_read <- function(behavior, customer) {
+customer = read_csv(customer)
+behavior = read_csv(behavior)
 
 customer <- customer[, colSums(!is.na(customer)) > 0] #remove all NA only columns
 customer <- customer[, !grepl("input_indv", names(customer))] #remove input_indv columns
@@ -43,5 +42,38 @@ other_cat_list = !cont_val_list2
 other_cat_list[1] = TRUE
 other_cat_df <- cont_val_df[, other_cat_list]
 
-categorical_df = merge(one_hot_df, other_cat_df, by = 'acct_id')
+categorical_df = merge(one_hot_df, other_cat_df, by = 'acct_id')}
+
+
+cont_data_read <- function(behavior, customer) {
+customer = read_csv(customer)
+behavior = read_csv(behavior)
+
+customer <- customer[, colSums(!is.na(customer)) > 0] #remove all NA only columns
+customer <- customer[, !grepl("input_indv", names(customer))] #remove input_indv columns
+behavior <- behavior[, colSums(!is.na(behavior)) > 0] #remove all NA only columns
+
+df <- merge(customer, behavior, by = "acct_id")
+
+one_hot_column_list <- sapply(df, function(x) all(is.na(x) | x %in% c(0,1)))
+cont_value_column_list = !one_hot_column_list
+one_hot_column_list[1] = TRUE
+
+one_hot_df <- df[, one_hot_column_list]
+one_hot_df[is.na(one_hot_df)] <- 0
+
+cont_val_df = df[, cont_value_column_list]
+cont_val_list2 <- sapply(cont_val_df, function(col) all(is.numeric(col) | is.na(col)))
+cont_val_list2[1] = TRUE
+continuous_df <- cont_val_df[, cont_val_list2]}
+
+kc_categorical= cat_data_read('KC_Behavior.csv', 'KC_Cust.csv')
+kc_continuous = cont_data_read('KC_Behavior.csv', 'KC_Cust.csv')
+lv_categorical = cat_data_read('Lville_Behavior.csv', 'LVille_Cust.csv')
+lv_continuous = cont_data_read('Lville_Behavior.csv', 'LVille_Cust.csv')
+vb_categorical = cat_data_read('VB_Behavior.csv', 'VB_Cust.csv')
+vb_continuous = cont_data_read('VB_Behavior.csv', 'VB_Cust.csv')
+
+
+
 ```
