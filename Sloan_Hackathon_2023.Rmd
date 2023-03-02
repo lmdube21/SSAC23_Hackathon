@@ -96,17 +96,6 @@ continuous <- lv_continuous %>% mutate(CityName = "Lousiville") %>%
 allData <- left_join(continuous, categorical) %>% 
   filter(brkr_ind == 0|is.na(brkr_ind))
   
-
-vars_to_impute <- c("client_pe_tkt_cnt", "financial_pct_score","e3_spend_pe_m_sports")
-
-data_to_impute <- 
-  allData %>% sample_n(5000) %>% select_if(function(x)  !is.character(x)) %>% select(-contains("int_") & -contains("_ind"))
-
-mice_data <- mice::mice(data_to_impute ,vars = vars_to_impute,method = "rf")
-
-imputed_5k <- complete(mice_data)
-write.csv(imputed_5k, "imputed_5k.csv")
-
 ```
 
 Removing all accounts for which there are multiple lines for whatever reason. ~1000 observations removed. 
@@ -140,6 +129,19 @@ continuous_minus_duplicates <-
   filter(ct == 1) %>%
   select(-ct)
 ```
+
+```{r}
+data_train <- allData %>% filter(!is.na(e3_spend_pe_m_sports) & !is.na(financial_pct_score) & !is.na(psx_group_id) &  !is.na(client_pe_tkt_cnt))
+
+    model <- randomForest::randomForest(e3_spend_pe_m_sports ~ financial_pct_score + psx_group_id + client_pe_tkt_cnt, data = data_train, ntree = 1000)
+    
+data_train$predicted_dollars <- predict(object = model, data = data_train)
+
+data_train <- data_train%>%mutate(PredictedTotalSpend = predicted_dollars * e3_events_cnt)
+
+ggplot(data_train, aes(x = ))
+```
+
 
 ### Zip Codes
 
