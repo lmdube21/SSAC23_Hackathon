@@ -133,13 +133,45 @@ continuous_minus_duplicates <-
 ```{r}
 data_train <- allData %>% filter(!is.na(e3_spend_pe_m_sports) & !is.na(financial_pct_score) & !is.na(psx_group_id) &  !is.na(client_pe_tkt_cnt))
 
-    model <- randomForest::randomForest(e3_spend_pe_m_sports ~ financial_pct_score + psx_group_id + client_pe_tkt_cnt, data = data_train, ntree = 1000)
+    model <- randomForest::randomForest(e3_spend_pe_m_sports ~ financial_pct_score + personicx_group + client_pe_tkt_cnt, data = data_train, ntree = 1000)
     
+save(file = "model.rda", model)    
+  
 data_train$predicted_dollars <- predict(object = model, data = data_train)
 
 data_train <- data_train%>%mutate(PredictedTotalSpend = predicted_dollars * e3_events_cnt)
 
-ggplot(data_train, aes(x = ))
+spend_by_city <- data_train %>% 
+  group_by(CityName) %>% 
+  summarise(City_Spend = mean(predicted_dollars),
+            City_Spend_sd = sd(predicted_dollars),
+            total_spend = sum(predicted_dollars),
+            sample_size = n())
+
+ggplot(data_train, aes(x= PredictedTotalSpend, fill = CityName)) + geom_density(alpha= .5) + xlim(0,2000) + labs(fill = "City", x = "Predicted Total Spend")
+
+ggplot(data_train, aes(x = predicted_dollars, col = log10(PredictedTotalSpend), y = e3_events_cnt)) + geom_point() + labs(x = "Per Event $", y = "# Events", col = "Log 10 3Y Predicted Total $") + ylim(0,60)
+```
+
+```{r}
+data_train_concert <- allData %>% filter(!is.na(e3_spend_pe_m_concerts) & !is.na(financial_pct_score) & !is.na(psx_group_id) &  !is.na(client_pe_tkt_cnt))
+
+
+model_concert <- randomForest::randomForest(e3_spend_pe_m_concerts ~ financial_pct_score + personicx_group + client_pe_tkt_cnt, data = data_train_concert, ntree = 1000)
+
+data_train_concert$predicted_dollars_concert <- predict(object = model_concert, data = data_train_concert)
+
+data_train_concert <- data_train_concert%>%mutate(PredictedTotalSpendConcert = predicted_dollars_concert * e3_events_cnt)
+
+ggplot(data_train_concert, aes(x= PredictedTotalSpendConcert, fill = CityName)) + geom_density(alpha= .5) + xlim(0,2000) + labs(fill = "City", x = "Predicted Total Spend on Concerts")
+
+spend_by_city_concert <- data_train %>% 
+  group_by(CityName) %>% 
+  summarise(City_Spend = mean(predicted_dollars),
+            City_Spend_sd = sd(predicted_dollars),
+            total_spend = sum(predicted_dollars),
+            sample_size = n())
+
 ```
 
 
@@ -181,11 +213,13 @@ fan_types <-
 
 fan_totals <-
   fan_types %>% 
+  filter(!str_detect(Sport, "College"))%>% 
   group_by(CityName) %>% 
   summarise(city_total_regular_fans = sum(regular_fan, na.rm= T))
 
 fan_types_by_city <- 
   fan_types %>% 
+  filter(!str_detect(Sport, "College")) %>%
   group_by(CityName, Sport) %>%
   summarise(population = mean(population),
             avg_score = mean(score, na.rm=T),
@@ -197,7 +231,9 @@ fan_types_by_city <-
             ) %>%
   left_join(fan_totals) %>% 
   rowwise() %>%
-  mutate(perc_by_sport = regular_fans/city_total_regular_fans)
+  mutate(perc_by_sport = regular_fans/city_total_regular_fans) %>% 
+  left_join(spend_by_city) %>%
+  mutate(FINAL_SPEND = total_spend * expected_regular_fans/sample_size * perc_by_sport)
 
 
   
@@ -212,7 +248,13 @@ ggplot(fan_types_by_city, aes(x= Sport, y = expected_super_fans/1000, fill = Spo
   geom_col() +
   facet_wrap(~CityName)+
   theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sport", y = "Expected Thousands of Super Fans", title = "Super Fans by Ciry and Sport")
+  labs(x = "Sport", y = "Expected Thousands of Super Fans", title = "Super Fans by City and Sport")
+
+ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName)+
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Sport", y = "Expected Revenue", title = "Super Fans by City and Sport")
 ```
 
 
