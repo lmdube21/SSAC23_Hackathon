@@ -84,12 +84,18 @@ categorical <- lv_categorical %>% mutate(CityName = "Lousiville") %>%
 continuous <- lv_continuous %>% mutate(CityName = "Lousiville") %>%
   bind_rows(vb_continuous %>%  mutate(CityName = "Virginia Beach")) %>%
   bind_rows(kc_continuous %>% mutate(CityName = "Kansas City"))
-  
+```
+
+
+```{r Zip Diagnostics}
 ggplot(continuous, aes(x= cust_postal_cd )) + 
   geom_histogram() +
   facet_wrap(~CityName) + 
   labs(x = "Zip Code")
+```
 
+
+```{r Remove Duplicate Accts}
 counts_cat <- 
   categorical %>% 
   group_by(acct_id) %>% 
@@ -118,7 +124,6 @@ continuous_minus_duplicates <-
   left_join(counts_cont) %>% 
   filter(ct == 1) %>%
   select(-ct)
-
 
 ```
 
