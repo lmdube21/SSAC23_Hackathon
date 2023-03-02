@@ -71,9 +71,20 @@ kc_categorical= cat_data_read('KC_Behavior.csv', 'KC_Cust.csv')
 kc_continuous = cont_data_read('KC_Behavior.csv', 'KC_Cust.csv')
 lv_categorical = cat_data_read('Lville_Behavior.csv', 'LVille_Cust.csv')
 lv_continuous = cont_data_read('Lville_Behavior.csv', 'LVille_Cust.csv')
-vb_categorical = cat_data_read('VB_Behavior.csv', 'VB_Cust.csv')
-vb_continuous = cont_data_read('VB_Behavior.csv', 'VB_Cust.csv')
-
+vb_categorical = cat_data_read('VB_Behavior2.csv', 'VB_Cust.csv')
+vb_continuous = cont_data_read('VB_Behavior2.csv', 'VB_Cust.csv')
 
 
 ```
+```{r}
+categorical <- lv_categorical %>% mutate(CityName = "Lousiville") %>%
+  bind_rows(vb_categorical %>%  mutate(CityName = "Virginia Beach")) %>%
+  bind_rows(kc_categorical %>% mutate(CityName = "Kansas City"))
+
+continuous <- lv_continuous %>% mutate(CityName = "Lousiville") %>%
+  bind_rows(vb_continuous %>%  mutate(CityName = "Virginia Beach")) %>%
+  bind_rows(kc_continuous %>% mutate(CityName = "Kansas City"))
+  
+
+```
+
