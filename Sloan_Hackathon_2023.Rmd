@@ -93,8 +93,19 @@ continuous <- lv_continuous %>% mutate(CityName = "Lousiville") %>%
                                       T ~ "NA"
                                       ),ordered = T))
 
-allData <- left_join(categorical, continuous) %>% 
+allData <- left_join(continuous, categorical) %>% 
   filter(brkr_ind == 0|is.na(brkr_ind))
+  
+
+vars_to_impute <- c("client_pe_tkt_cnt", "financial_pct_score","e3_spend_pe_m_sports")
+
+data_to_impute <- 
+  allData %>% sample_n(5000) %>% select_if(function(x)  !is.character(x)) %>% select(-contains("int_") & -contains("_ind"))
+
+mice_data <- mice::mice(data_to_impute ,vars = vars_to_impute,method = "rf")
+
+imputed_5k <- complete(mice_data)
+write.csv(imputed_5k, "imputed_5k.csv")
 
 ```
 
@@ -169,7 +180,7 @@ fan_types <-
 fan_totals <-
   fan_types %>% 
   group_by(CityName) %>% 
-  summarise(city_fan_ct = n())
+  summarise(city_total_regular_fans = sum(regular_fan, na.rm= T))
 
 fan_types_by_city <- 
   fan_types %>% 
@@ -184,7 +195,7 @@ fan_types_by_city <-
             ) %>%
   left_join(fan_totals) %>% 
   rowwise() %>%
-  mutate(perc_by_sport = ct/city_fan_ct)
+  mutate(perc_by_sport = regular_fans/city_total_regular_fans)
 
 
   
