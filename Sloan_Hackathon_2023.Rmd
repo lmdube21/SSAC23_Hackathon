@@ -44,15 +44,4 @@ other_cat_list[1] = TRUE
 other_cat_df <- cont_val_df[, other_cat_list]
 
 categorical_df = merge(one_hot_df, other_cat_df, by = 'acct_id')
-
 ```
-
-## Including Plots
-
-
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
