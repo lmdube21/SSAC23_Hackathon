@@ -147,10 +147,22 @@ spend_by_city <- data_train %>%
             City_Spend_sd = sd(predicted_dollars),
             total_spend = sum(predicted_dollars),
             sample_size = n())
+```
 
-ggplot(data_train, aes(x= PredictedTotalSpend, fill = CityName)) + geom_density(alpha= .5) + xlim(0,2000) + labs(fill = "City", x = "Predicted Total Spend")
 
-ggplot(data_train, aes(x = predicted_dollars, col = log10(PredictedTotalSpend), y = e3_events_cnt)) + geom_point() + labs(x = "Per Event $", y = "# Events", col = "Log 10 3Y Predicted Total $") + ylim(0,60)
+```{r}
+ggplot(data_train, aes(x= predicted_dollars, fill = CityName)) +
+  geom_density(alpha= .5) +
+  xlim(130,300) + 
+  labs(fill = "City", x = "Average $ Per Event") +
+  scale_fill_viridis_d() +
+  geom_vline(xintercept = spend_by_city$City_Spend, color = c("#9283a4", "#85bbbd", "#e9e593"), size =1.5, alpha = .7) + 
+  ggthemes::theme_economist()
+```
+
+
+```{r}
+ggplot(data_train, aes(x = predicted_dollars, col = log10(PredictedTotalSpend), y = e3_events_cnt)) + geom_point() + labs(x = "Per Event $", y = "# Events", col = "Log 10 3Y Predicted Total $") + ylim(0,60) 
 ```
 
 ```{r}
@@ -211,6 +223,8 @@ fan_types <-
          regular_fan= ifelse(score >= mean(score, na.rm=T), 1, 0),
          Sport = sub(".*:", "", Sport))
 
+
+
 fan_totals <-
   fan_types %>% 
   filter(!str_detect(Sport, "College"))%>% 
@@ -236,6 +250,25 @@ fan_types_by_city <-
   mutate(FINAL_SPEND = total_spend * expected_regular_fans/sample_size * perc_by_sport)%>%
   left_join(spend_by_city_concert) %>%
    mutate(FINAL_SPEND_concert = total_spend_concert * expected_regular_fans/sample_size)
+```
+
+```{r}
+league_percent <- c("Football" = 0.015, "Hockey" = 0.35, "Basketball" = 0.2238, "Baseball" = .3, 'Soccer' =.28)
+
+fan_types_by_city = fan_types_by_city %>%
+    mutate(league_revenue = case_when(Sport == "Baseball" ~ FINAL_SPEND * 0.3,
+                               Sport == "Football" ~ FINAL_SPEND *0.015,
+                               Sport == "Soccer" ~ FINAL_SPEND *0.28,
+                               Sport == "Hockey" ~ FINAL_SPEND * 0.377,
+                               Sport == "Basketball" ~ FINAL_SPEND * 0.2238))
+
+ggplot(fan_types_by_city, aes(x= Sport, y = league_revenue/1000000, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName) +
+  labs(x = "Sport", y = "Million $", title = "Expected League Revenue") + 
+  ggthemes::theme_economist()+
+  theme(axis.text.x = element_text(angle = 90)) + ylim(0,50)
+
 ```
 
 
@@ -308,4 +341,51 @@ table_for_plot %>%
 ```
 
 
+
+# Concert more
+
+```{r}
+fan_types_concerts <-
+  continuous %>% 
+  select(contains("propn_score_minor_1"), CityName) %>% 
+  pivot_longer(values_to = "score", cols = c(contains("propn")), names_to = "Prop") %>%
+  left_join(population, by = c("CityName" = "city"))%>%
+  left_join(read_csv("prop_join.csv")) %>%
+  rename(Genre = Sport) %>%
+  mutate(prop_number = as.numeric(substring(Prop,nchar(Prop)-3+1), nchar(Prop))) %>%
+  filter(between(prop_number, 100, 200)) %>% 
+  mutate(super_fan = ifelse(score >= 650, 1, 0),
+         regular_fan= ifelse(score >= mean(score, na.rm=T), 1, 0),
+         Genre = sub(".*:", "", Genre))
+
+fan_totals_concerts <-
+  fan_types_concerts %>% 
+  group_by(CityName) %>% 
+  summarise(city_total_regular_fans = sum(regular_fan, na.rm= T))
+
+fan_types_by_city_concert <- 
+  fan_types_concerts %>% 
+  group_by(CityName) %>%
+  summarise(population = mean(population),
+            avg_score = mean(score, na.rm=T),
+            regular_fans =  sum(regular_fan, na.rm=T), 
+            super_fans = sum(super_fan, na.rm=T),
+            ct = n(),
+            expected_super_fans = super_fans*population/ct,
+            expected_regular_fans = regular_fans*population/ct,
+            ) %>%
+  left_join(fan_totals_concerts) %>% 
+  rowwise() %>%
+  mutate(perc_by_sport = regular_fans/city_total_regular_fans) %>% 
+  left_join(spend_by_city_concert) %>%
+  mutate(FINAL_SPEND_concert = total_spend_concert * expected_regular_fans/sample_size_concert)
+```
+
+```{r}
+concert_matches <- left_join(fan_types_by_city %>% select(CityName, Sport, FINAL_SPEND),fan_types_by_city_concert %>% select(CityName, FINAL_SPEND_concert))
+
+ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size =F, col = F) +theme(legend.position="right")
+
+ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size =F, shape = F) +theme(legend.position="top")
+``` 
 
