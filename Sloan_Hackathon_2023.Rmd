@@ -283,7 +283,8 @@ ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND/1000000, fill = Sport)) 
 ```
 
 ```{r league revenue}
-```{r revenue}
+library(gt)
+library(gtExtras)
 
 fan_types_by_city = fan_types_by_city %>%
     mutate(league_revenue_tickets_percent = case_when(Sport == "Baseball" ~ FINAL_SPEND / (0.3*9780000000),
@@ -291,15 +292,18 @@ fan_types_by_city = fan_types_by_city %>%
                                Sport == "Soccer" ~ FINAL_SPEND /(0.28*1490000000),
                                Sport == "Hockey" ~ FINAL_SPEND /(0.377*6100000000),
                                Sport == "Basketball" ~ FINAL_SPEND / (0.2238*9541000000)))
-write.csv(fan_types_by_city, 'table.csv')
-           
-           
-ggplot(fan_types_by_city, aes(x= Sport, y = league_revenue_tickets_percent, fill = Sport)) + 
-  geom_col() +
-  facet_wrap(~CityName) +
-  labs(x = "Sport", y = "Million $", title = "Expected League Revenue") + 
-  ggthemes::theme_economist()+
-  theme(axis.text.x = element_text(angle = 90)) + ylim(0,1)
+
+
+table_for_plot = read_csv("table.csv")
+table_for_plot = table_for_plot[order(table_for_plot$`Percentage`, decreasing = TRUE), ]
+table_for_plot %>%  
+  gt() %>% 
+  gt_theme_espn() %>% 
+  tab_header(title = "Percent of Current League Ticket Sales Revenue" )%>%
+  cols_align(
+    align = "center",
+    columns = 'Percentage'
+  )
 
 ```
 
