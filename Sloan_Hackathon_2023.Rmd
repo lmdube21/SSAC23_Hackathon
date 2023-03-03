@@ -154,7 +154,7 @@ spend_by_city <- data_train %>%
 ggplot(data_train, aes(x= predicted_dollars, fill = CityName)) +
   geom_density(alpha= .5) +
   xlim(130,300) + 
-  labs(fill = "City", x = "Average $ Per Event") +
+  labs( x = "Average $ Per Event", fill = "", y = "Density") +
   scale_fill_viridis_d() +
   geom_vline(xintercept = spend_by_city$City_Spend, color = c("#9283a4", "#85bbbd", "#e9e593"), size =1.5, alpha = .7) + 
   ggthemes::theme_economist()
@@ -315,30 +315,7 @@ ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND/1000000, fill = Sport)) 
   theme(axis.text.x = element_text(angle = 90)) + ylim(0,115)
 ```
 
-```{r league revenue}
-library(gt)
-library(gtExtras)
 
-fan_types_by_city = fan_types_by_city %>%
-    mutate(league_revenue_tickets_percent = case_when(Sport == "Baseball" ~ FINAL_SPEND / (0.3*9780000000),
-                               Sport == "Football" ~ FINAL_SPEND /(0.15*17035000000),
-                               Sport == "Soccer" ~ FINAL_SPEND /(0.28*1490000000),
-                               Sport == "Hockey" ~ FINAL_SPEND /(0.377*6100000000),
-                               Sport == "Basketball" ~ FINAL_SPEND / (0.2238*9541000000)))
-
-
-table_for_plot = read_csv("table.csv")
-table_for_plot = table_for_plot[order(table_for_plot$`Percentage`, decreasing = TRUE), ]
-table_for_plot %>%  
-  gt() %>% 
-  gt_theme_espn() %>% 
-  tab_header(title = "Percent of Current League Ticket Sales Revenue" )%>%
-  cols_align(
-    align = "center",
-    columns = 'Percentage'
-  )
-
-```
 
 
 
@@ -386,6 +363,6 @@ concert_matches <- left_join(fan_types_by_city %>% select(CityName, Sport, FINAL
 
 ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size =F, col = F) +theme(legend.position="right")
 
-ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size =F, shape = F) +theme(legend.position="top")
+ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", color = "", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size =F, shape = F) +theme(legend.position="top")
 ``` 
 
