@@ -162,7 +162,10 @@ ggplot(data_train, aes(x= predicted_dollars, fill = CityName)) +
 
 
 ```{r}
-ggplot(data_train, aes(x = predicted_dollars, col = log10(PredictedTotalSpend), y = e3_events_cnt)) + geom_point() + labs(x = "Per Event $", y = "# Events", col = "Log 10 3Y Predicted Total $") + ylim(0,60) 
+ggplot(data_train, aes(x = predicted_dollars, col = log10(PredictedTotalSpend), y = e3_events_cnt)) + 
+  geom_point() + 
+  labs(x = "Per Event $", y = "# Events", col = "Log 10 3Y Predicted Total $") +
+  ylim(0,60) 
 ```
 
 ```{r}
@@ -275,18 +278,18 @@ ggplot(fan_types_by_city, aes(x= Sport, y = league_revenue/1000000, fill = Sport
 ```{r}
 ggData <- fan_types_by_city %>%
   mutate(reg2 = expected_regular_fans-expected_super_fans) %>%select(CityName, Sport, reg2, expected_super_fans) %>% pivot_longer(cols = c("reg2", "expected_super_fans"))%>%
-  rename(type = name)
+  rename(type = name) %>% mutate(type2 = factor(type, ordered =T,levels = c("reg2","expected_super_fans") ))
 ```
 
 
 ```{r}
-ggplot(ggData, aes(x= Sport, y = value/1000000, fill = Sport,linetype=  type)) + 
+ggplot(ggData, aes(x= Sport, y = value/1000000, fill = Sport,linetype=  type2)) + 
   geom_col(color ="black") +
   facet_wrap(~CityName)+
-  labs(x = "Sport", y = "Millions of Fans", title = "Expected Fans")+ 
+  labs(x = "Sport", y = "Millions of Fans", title = "Expected Fans", fill = "")+ 
   ggthemes::theme_economist()+
   theme(axis.text.x = element_text(angle = 90))+ylim(0,1.7) +
-  scale_linetype_manual(values=c("dotted", "blank"))+
+  scale_linetype_manual(values=c("blank", "dotted"))+
   guides(linetype =F)
 ```
 
@@ -310,11 +313,12 @@ ggplot(fan_types_by_city, aes(x= Sport, y = expected_super_fans/1000000, fill = 
 ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND/1000000, fill = Sport)) + 
   geom_col() +
   facet_wrap(~CityName) +
-  labs(x = "Sport", y = "Million $", title = "Expected Revenue") + 
+  labs(x = "Sport", y = "Million $", title = "Expected Revenue", fill = "") + 
   ggthemes::theme_economist()+
   theme(axis.text.x = element_text(angle = 90)) + ylim(0,115)
-```
 
+```
+$P(\text{Tix\$}) \sim \text{FinanceStatus} + \text{LifeStage} + \text{PrevTixHistory})$
 
 
 
