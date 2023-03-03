@@ -282,7 +282,24 @@ ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND/1000000, fill = Sport)) 
   theme(axis.text.x = element_text(angle = 90)) + ylim(0,115)
 ```
 
+```{r league revenue}
+league_percent <- c("Football" = 0.015, "Hockey" = 0.35, "Basketball" = 0.2238, "Baseball" = .3, 'Soccer' =.28)
 
+fan_types_by_city = fan_types_by_city %>%
+    mutate(league_revenue = case_when(Sport == "Baseball" ~ FINAL_SPEND * 0.3,
+                               Sport == "Football" ~ FINAL_SPEND *0.015,
+                               Sport == "Soccer" ~ FINAL_SPEND *0.28,
+                               Sport == "Hockey" ~ FINAL_SPEND * 0.377,
+                               Sport == "Basketball" ~ FINAL_SPEND * 0.2238))
+
+ggplot(fan_types_by_city, aes(x= Sport, y = league_revenue/1000000, fill = Sport)) + 
+  geom_col() +
+  facet_wrap(~CityName) +
+  labs(x = "Sport", y = "Million $", title = "Expected League Revenue") + 
+  ggthemes::theme_economist()+
+  theme(axis.text.x = element_text(angle = 90)) + ylim(0,50)
+
+```
 
 
 
