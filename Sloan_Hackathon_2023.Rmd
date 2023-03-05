@@ -2,7 +2,9 @@
 title: "SSAC_2023"
 author: "Lorenzo Dube and Xander Schwartz"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -154,7 +156,7 @@ spend_by_city <- data_train %>%
 ggplot(data_train, aes(x= predicted_dollars, fill = CityName)) +
   geom_density(alpha= .5) +
   xlim(130,300) + 
-  labs( x = "Average $ Per Event", fill = "", y = "Density") +
+  labs( x = "Modeled $ Per Event", fill = "", y = "Density") +
   scale_fill_viridis_d() +
   geom_vline(xintercept = spend_by_city$City_Spend, color = c("#9283a4", "#85bbbd", "#e9e593"), size =1.5, alpha = .7) + 
   ggthemes::theme_economist()
@@ -318,10 +320,7 @@ ggplot(fan_types_by_city, aes(x= Sport, y = FINAL_SPEND/1000000, fill = Sport)) 
   theme(axis.text.x = element_text(angle = 90)) + ylim(0,115)
 
 ```
-$P(\text{Tix\$}) \sim \text{FinanceStatus} + \text{LifeStage} + \text{PrevTixHistory})$
-
-
-
+$E[\text{Event\$}] \sim \text{FinancialStatus} + \text{LifeStage} + \text{PrevTixHistory})$
 
 # Concert more
 
@@ -367,6 +366,6 @@ concert_matches <- left_join(fan_types_by_city %>% select(CityName, Sport, FINAL
 
 ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size =F, col = F) +theme(legend.position="right")
 
-ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", color = "", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size =F, shape = F) +theme(legend.position="top")
+ggplot(concert_matches, aes(y = FINAL_SPEND_concert/1000000, x= FINAL_SPEND/1000000, shape = CityName, col = Sport, size = (FINAL_SPEND_concert+FINAL_SPEND)/1000000)) + geom_point() + labs(x = "Million $ of Sports Revenue", y = "Million $ of Concert Revenue", shape = "City", color = "", title= "Sports & Concert Revenue") + ggthemes::theme_economist() + guides(size = F, shape = F) + theme(legend.position="top")
 ``` 
 
